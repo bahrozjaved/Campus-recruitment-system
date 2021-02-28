@@ -1,133 +1,46 @@
-import React, { useState } from "react";
-import { View, Text, Pressable, Modal, Alert } from "react-native";
+import React from 'react';
+import { Header,Left,Body,Right,Icon,Title,Thumbnail }  from 'native-base';
+import { connect } from 'react-redux';
+import { SignOut } from '../store/actions/action';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-// Redux
-import { useSelector, useDispatch } from "react-redux";
+function CustomHeader(props) {
 
-// firebase
-import firebase from "firebase";
-
-// Styles
-import { headerStyle as styles } from "./../styles/componentStyles";
-import { logoutSuccess } from "../redux/userReducer";
-
-export default function Header() {
-  const { user } = useSelector((state) => state.user);
-
-  const dispatch = useDispatch();
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Campus Recruitment System</Text>
-      <Pressable
-        style={{
-          position: "absolute",
-          top: 47,
-          right: 15,
-          backgroundColor: "#fff",
-          borderRadius: 30,
-          width: 30,
-          height: 30,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        onPress={() => setIsOpen(!isOpen)}
-      >
-        <Text>{user[0]}</Text>
-      </Pressable>
-      <Modal
-        visible={isOpen}
-        onRequestClose={() => {
-          setIsOpen(!isOpen);
-        }}
-        animationType="slide"
-        transparent={true}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 22,
-          }}
-        >
-          <View
-            style={{
-              margin: 20,
-              backgroundColor: "white",
-              borderRadius: 10,
-              padding: 60,
-              alignItems: "center",
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 4,
-              elevation: 5,
-            }}
-          >
-            <Pressable
-              style={{
-                position: "absolute",
-                top: 15,
-                right: 15,
-                width: 25,
-                height: 25,
-                backgroundColor: "#FFDD83",
-                borderRadius: 25,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-              onPress={() => setIsOpen(!isOpen)}
-            >
-              <Text
-                style={{
-                  fontWeight: "700",
-                  fontSize: 14,
-                }}
-              >
-                X
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[
-                {
-                  borderRadius: 10,
-                  padding: 10,
-                  elevation: 2,
-                },
-                {
-                  backgroundColor: "#4E51BF",
-                },
-              ]}
-              onPress={() => {
-                firebase
-                  .auth()
-                  .signOut()
-                  .then(() => {
-                    dispatch(logoutSuccess());
-                  })
-                  .catch((err) => Alert.alert("", `${err.message}`));
-                setIsOpen(!isOpen);
-              }}
-            >
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: "bold",
-                  textAlign: "center",
-                }}
-              >
-                Log Out
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
+    return (
+        <Header androidStatusBarColor='gray' rounded={true} style={{ backgroundColor: 'black' }}>
+            <Left style={{ flex: 0 }}>
+               <TouchableOpacity onPress={() => props.nav.navigation.openDrawer()} >
+                <Icon name='menu' style={{ color: 'white' }} onPress={() => props.nav.navigation.openDrawer()} />
+                </TouchableOpacity>
+            </Left>
+            <Body style={{ flex: 1, alignItems: 'center', width: '100%' }}>
+                <Title>{props.title}</Title>
+            </Body>
+            <Right style={{ flex: 0 }}>
+                <TouchableOpacity>
+                    {props.title === 'Profile' ? <Icon name='power-off' type='FontAwesome5' style={{ color: 'white', fontSize: 22 }} onPress={() => { props.logout(props) }} /> :
+                        <TouchableOpacity onPress={() => { props.nav.navigation.navigate('Profile') }}>
+                     {!props.state.guser?
+                     null : <Thumbnail circular={true} source={{ uri:!props.state.guser? '': props.nav.state.guser.photo}} style={{ width: 40, height:40,}} />     
+                     }
+                        </TouchableOpacity>}
+                </TouchableOpacity>
+            </Right>
+        </Header>
+    );
 }
+
+function mapStateToProp(state) {
+    return {
+        state,
+    }
+}
+
+function mapDispatchToProp(dispatch) {
+    return {
+        logout: (props) => { dispatch(SignOut(props)) },
+
+    }
+}
+
+export default connect(mapStateToProp, mapDispatchToProp)(CustomHeader)
